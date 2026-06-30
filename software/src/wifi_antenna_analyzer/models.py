@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import statistics
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum
@@ -88,3 +89,12 @@ class BenchmarkResult:
     @property
     def maximum(self) -> int | None:
         return max(self.samples) if self.samples else None
+
+    @property
+    def stdev(self) -> float | None:
+        """Desviación estándar muestral del RSSI; 0.0 con una sola muestra."""
+        if not self.samples:
+            return None
+        if len(self.samples) == 1:
+            return 0.0
+        return statistics.stdev(self.samples)

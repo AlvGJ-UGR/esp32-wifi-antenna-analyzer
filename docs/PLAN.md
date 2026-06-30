@@ -33,14 +33,16 @@ antes de pasar a la siguiente.
 - [x] Guardado automático a CSV mientras está conectado
 - [ ] Pulir estilo visual / iconos (cosmético, baja prioridad)
 
-## Fase 3 — Modo Benchmark (siguiente)
-- [ ] Botón "Iniciar Benchmark" con duración configurable (default 30s) en la GUI
-- [ ] Acumular muestras por red (por MAC) durante la ventana usando `BenchmarkResult`
-      (ya definido en `models.py`, falta la lógica de orquestación)
-- [ ] Mostrar resumen al terminar: media, desviación estándar, máximo, mínimo, nº muestras
-- [ ] Tests del cálculo de estadísticas con datos sintéticos
+## Fase 3 — Modo Benchmark ✅
+- [x] Botón "Iniciar Benchmark" con duración configurable (default 30s) en la GUI
+- [x] Acumular muestras por red (por MAC) durante la ventana usando `BenchmarkResult`
+      (orquestado por `benchmark.BenchmarkSession`, sin I/O, testeado con datos sintéticos)
+- [x] Mostrar resumen al terminar: media, desviación estándar, máximo, mínimo, nº muestras
+- [x] Tests del cálculo de estadísticas con datos sintéticos (`test_benchmark.py`, `test_models.py`)
+- [x] Export automático del resumen a CSV (`BenchmarkCsvWriter`, `data/benchmark_*.csv`)
+- [ ] (opcional) Exponer el modo benchmark también en `waa-scan` (CLI, sin GUI)
 
-## Fase 4 — Comparador de antenas (pendiente)
+## Fase 4 — Comparador de antenas (siguiente)
 - [ ] Guardar resultados de benchmark etiquetados por nombre de antena
 - [ ] Emparejar redes entre dos benchmarks por MAC (no por SSID)
 - [ ] Calcular diferencia de RSSI (ganancia/pérdida en dB) y diferencia en nº de redes

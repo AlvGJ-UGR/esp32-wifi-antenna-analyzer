@@ -1,11 +1,13 @@
-"""GUI Tkinter del Wi-Fi Antenna Analyzer — Fase 2 (pestaña Scanner).
+"""GUI Tkinter del Wi-Fi Antenna Analyzer — Fases 2 y 3 (Scanner + Benchmark).
 
 Arquitectura: la lectura serie corre en un hilo aparte y publica
 eventos en una cola; el hilo principal de Tkinter vacía la cola cada
 100ms y actualiza la tabla. Así la UI nunca se congela esperando al
-puerto serie. Las pestañas de Comparador/Gráficas/Estadísticas
-(Fases 3-5) se añadirán como módulos adicionales dentro de este
-paquete `gui/`, reutilizando esta misma ventana principal.
+puerto serie. Cuando hay un benchmark activo, las mismas muestras se
+reenvían también a la `BenchmarkSession` correspondiente. Las
+pestañas de Comparador/Gráficas/Estadísticas (Fases 4-5) se añadirán
+como módulos adicionales dentro de este paquete `gui/`, reutilizando
+esta misma ventana principal.
 """
 
 from __future__ import annotations
@@ -13,12 +15,15 @@ from __future__ import annotations
 import logging
 import queue
 import threading
+import time
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+from ..benchmark import BenchmarkSession
 from ..models import NetworkSample, ScanEnd
 from ..serial_link import SerialLink, SerialLinkError
-from ..storage import ScanCsvWriter
+from ..storage import BenchmarkCsvWriter, ScanCsvWriter
+from .benchmark_tab import BenchmarkTab
 
 logger = logging.getLogger(__name__)
 
@@ -104,6 +109,9 @@ class AnalyzerApp(ttk.Frame):
         self._reader_thread: threading.Thread | None = None
         self._stop_flag = threading.Event()
 
+        self._benchmark_session: BenchmarkSession | None = None
+        self._benchmark_end_time: float | None = None
+
         self._build_connection_bar()
         self._build_tabs()
 
@@ -144,11 +152,14 @@ class AnalyzerApp(ttk.Frame):
         self.scanner_tab = ScannerTab(notebook)
         notebook.add(self.scanner_tab, text="Scanner")
 
+        self.benchmark_tab = BenchmarkTab(notebook, on_start=self._start_benchmark)
+        notebook.add(self.benchmark_tab, text="Benchmark")
+
         # Próximas fases: Comparador, Gráficas, Estadísticas.
         placeholder = ttk.Frame(notebook)
         ttk.Label(
             placeholder,
-            text="Próximamente: Comparador, Gráficas y Estadísticas (Fases 3-5)",
+            text="Próximamente: Comparador de antenas, Gráficas y Estadísticas (Fases 4-5)",
         ).pack(padx=20, pady=20)
         notebook.add(placeholder, text="Próximamente")
 
@@ -199,6 +210,8 @@ class AnalyzerApp(ttk.Frame):
         if self._csv_writer is not None:
             self._csv_writer.close()
             self._csv_writer = None
+        if self._benchmark_session is not None:
+            self._cancel_benchmark("Desconectado: benchmark cancelado.")
         self.status_var.set("Desconectado")
         self.connect_button.configure(text="Conectar")
 
@@ -223,6 +236,8 @@ class AnalyzerApp(ttk.Frame):
                     self.scanner_tab.upsert_sample(item)
                     if self._csv_writer is not None:
                         self._csv_writer.write(item)
+                    if self._benchmark_session is not None:
+                        self._benchmark_session.add_sample(item)
                 elif isinstance(item, ScanEnd):
                     self.scanner_tab.on_scan_end(item)
                 elif isinstance(item, Exception):
@@ -231,7 +246,69 @@ class AnalyzerApp(ttk.Frame):
         except queue.Empty:
             pass
         finally:
+            self._tick_benchmark()
             self.master.after(self.POLL_INTERVAL_MS, self._drain_queue)
+
+    # --- modo benchmark (Fase 3) ------------------------------------------------
+
+    def _start_benchmark(self, duration_seconds: float) -> None:
+        if self._link is None:
+            messagebox.showwarning(
+                "Sin conexión", "Conéctate a un ESP32 antes de iniciar un benchmark."
+            )
+            return
+
+        antenna = self.antenna_var.get().strip() or "default"
+        self._benchmark_session = BenchmarkSession(
+            antenna=antenna, duration_seconds=duration_seconds
+        )
+        self._benchmark_end_time = time.monotonic() + duration_seconds
+
+        self.benchmark_tab.clear_results()
+        self.benchmark_tab.set_running(True)
+        self.benchmark_tab.set_status(
+            f"Benchmark en curso ({antenna})... {duration_seconds:.0f}s restantes"
+        )
+
+    def _tick_benchmark(self) -> None:
+        if self._benchmark_session is None or self._benchmark_end_time is None:
+            return
+
+        remaining = self._benchmark_end_time - time.monotonic()
+        if remaining <= 0:
+            self._finish_benchmark()
+            return
+
+        self.benchmark_tab.set_status(
+            f"Benchmark en curso... {remaining:.0f}s restantes "
+            f"({self._benchmark_session.network_count} redes, "
+            f"{self._benchmark_session.sample_count} muestras)"
+        )
+
+    def _finish_benchmark(self) -> None:
+        assert self._benchmark_session is not None
+        session = self._benchmark_session
+        results = session.results()
+
+        self.benchmark_tab.show_results(results)
+        self.benchmark_tab.set_running(False)
+
+        with BenchmarkCsvWriter(outdir="../data", antenna=session.antenna) as writer:
+            writer.write_results(results)
+
+        self.benchmark_tab.set_status(
+            f"Benchmark completado: {len(results)} redes, {session.sample_count} muestras"
+            f" — guardado en {writer.path.name}"
+        )
+
+        self._benchmark_session = None
+        self._benchmark_end_time = None
+
+    def _cancel_benchmark(self, reason: str) -> None:
+        self.benchmark_tab.set_running(False)
+        self.benchmark_tab.set_status(reason)
+        self._benchmark_session = None
+        self._benchmark_end_time = None
 
     def _on_close(self) -> None:
         self._disconnect()

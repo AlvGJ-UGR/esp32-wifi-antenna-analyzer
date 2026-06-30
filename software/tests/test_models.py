@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import pytest
+
 from wifi_antenna_analyzer.models import BenchmarkResult, NetworkSample, SecurityType
 
 
@@ -57,3 +59,17 @@ def test_benchmark_result_empty_has_none_stats():
     assert result.mean is None
     assert result.minimum is None
     assert result.maximum is None
+    assert result.stdev is None
+
+
+def test_benchmark_result_stdev_single_sample_is_zero():
+    result = BenchmarkResult(bssid="AA:BB:CC:DD:EE:FF", ssid="Test", antenna="dipolo")
+    result.add_sample(-60)
+    assert result.stdev == 0.0
+
+
+def test_benchmark_result_stdev_multiple_samples():
+    result = BenchmarkResult(bssid="AA:BB:CC:DD:EE:FF", ssid="Test", antenna="dipolo")
+    for rssi in (-60, -62, -58):
+        result.add_sample(rssi)
+    assert result.stdev == pytest.approx(2.0, abs=0.01)
