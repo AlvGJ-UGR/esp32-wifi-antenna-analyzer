@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-tests:
+    name: Tests y lint (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: software
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Instalar el paquete y dependencias de desarrollo
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Formato (black --check)
+        run: black --check .
+
+      - name: Tests (pytest)
+        run: pytest --cov=wifi_antenna_analyzer
+
+  firmware-build:
+    name: Compilar firmware (PlatformIO)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: firmware/esp32_wifi_scanner
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar PlatformIO
+        run: pip install platformio
+
+      - name: Compilar (pio run)
+        run: pio run

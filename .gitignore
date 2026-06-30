@@ -1,13 +1,32 @@
-# PlatformIO
-.pio/
-.vscode/
-
-# Python
+# --- Python ---
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 .venv/
 venv/
+*.cover
 
-# Sistema
+# --- PlatformIO ---
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# --- Datos generados por el analizador ---
+data/*.csv
+data/*.db
+data/*.pdf
+!data/.gitkeep
+
+# --- Editores / SO ---
+.vscode/
+.idea/
+*.swp
 .DS_Store
 Thumbs.db
