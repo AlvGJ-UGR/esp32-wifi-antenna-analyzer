@@ -3,7 +3,7 @@
 [![CI](https://github.com/AlvGJ-UGR/esp32-wifi-antenna-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/AlvGJ-UGR/esp32-wifi-antenna-analyzer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Instrumento de medida (no un "Wi-Fi hacker") para comparar antenas
+Instrumento de medida para comparar antenas
 Wi-Fi de forma objetiva usando un ESP32 como sensor RSSI: cuántas
 redes detecta cada antena, qué RSSI medio consigue, en qué canales
 rinde mejor, etc.
