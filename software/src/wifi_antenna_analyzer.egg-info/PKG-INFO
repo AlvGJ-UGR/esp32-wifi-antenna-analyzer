@@ -1,0 +1,23 @@
+Metadata-Version: 2.4
+Name: wifi-antenna-analyzer
+Version: 0.5.0
+Summary: Herramienta para comparar antenas Wi-Fi de forma objetiva usando un ESP32 como sensor RSSI
+Author-email: AlvGJ-UGR <alvarogj1@correo.ugr.es>
+License: MIT
+Keywords: esp32,wifi,rssi,antenna,rf
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: System :: Networking :: Monitoring
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: pyserial>=3.5
+Requires-Dist: pandas>=2.0
+Requires-Dist: matplotlib>=3.7
+Requires-Dist: numpy>=1.24
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"
+Requires-Dist: pytest-cov>=5.0; extra == "dev"
+Requires-Dist: ruff>=0.6; extra == "dev"
+Requires-Dist: black>=24.0; extra == "dev"

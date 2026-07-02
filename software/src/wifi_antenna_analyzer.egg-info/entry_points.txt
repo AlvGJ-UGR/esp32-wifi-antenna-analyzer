@@ -1,0 +1,3 @@
+[console_scripts]
+waa-gui = wifi_antenna_analyzer.gui.app:main
+waa-scan = wifi_antenna_analyzer.cli:main
