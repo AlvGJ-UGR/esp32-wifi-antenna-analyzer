@@ -7,7 +7,8 @@ Gracias por el interés en mejorar el ESP32 Wi-Fi Antenna Analyzer.
 - `firmware/esp32_wifi_scanner/` — proyecto PlatformIO para el ESP32.
 - `software/` — paquete Python instalable (`wifi_antenna_analyzer`).
 - `docs/PLAN.md` — plan de desarrollo por fases, con checklist.
-- `data/` — salida de CSVs de ejemplo (ignorado por git salvo `.gitkeep`).
+- `CHANGELOG.md` — historial de cambios por versión.
+- `data/` — salida de CSVs/PDFs generados por el analizador (ignorado por git salvo `.gitkeep`).
 
 ## Entorno de desarrollo (software)
 
@@ -63,3 +64,7 @@ pio device monitor         # monitor serie
 1. `pytest` y `ruff check .` en verde dentro de `software/`.
 2. `pio run` en verde dentro de `firmware/esp32_wifi_scanner/`.
 3. Actualiza `docs/PLAN.md` si tu cambio completa o modifica una fase.
+4. Añade una entrada en `CHANGELOG.md` (sección "Sin publicar").
+
+Al abrir el PR se rellena automáticamente una plantilla
+(`.github/PULL_REQUEST_TEMPLATE.md`) con este mismo checklist.
