@@ -55,3 +55,27 @@ jobs:
 
       - name: Compilar (pio run)
         run: pio run
+
+  firmware-epaper-build:
+    name: Compilar firmware e-paper (PlatformIO, opcional)
+    runs-on: ubuntu-latest
+    # No debe bloquear el resto de la CI si algo del hardware opcional
+    # (pantalla e-paper) falla: es una funcionalidad extra, no el
+    # firmware principal del proyecto.
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: firmware/esp32_epaper_display
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar PlatformIO
+        run: pip install platformio
+
+      - name: Compilar (pio run)
+        run: pio run
