@@ -23,13 +23,34 @@ una carpeta de sketch (renombrando `main.cpp` a
 `esp32_wifi_scanner.ino`), y sube con la placa ESP32 seleccionada. El
 código es C++ estándar de Arduino, no usa nada específico de PlatformIO.
 
-## Notas de hardware
+## Notas de hardware — ESP32-WROOM-32UE
 
-Si tu placa tiene conector de antena externa, comprueba que está
-configurada para usarla (resistencia de selección 0-ohm o conector
-U.FL/IPEX conmutado, según el modelo). Si sigue usando la antena PCB
-interna, las mediciones no reflejarán el rendimiento de la antena
-externa que estés probando.
+El comportamiento del conector de antena depende del módulo exacto
+que lleve tu placa:
+
+- **ESP32-WROOM-32UE / -32U** (conector U.FL/IPEX, sin antena PCB):
+  no hay resistencia de selección que mover ni nada que configurar —
+  a diferencia del WROOM-32D/-32E, este módulo *no tiene* antena
+  impresa en la placa, así que toda la señal sale siempre por el
+  conector U.FL. **Importante:** el módulo se vende sin antena; si
+  no le has conectado una, no transmite ni recibe nada útil. El
+  conector es compatible indistintamente con U.FL (Hirose), MHF-I
+  (I-PEX) y AMC (Amphenol) — son el mismo contacto con nombres
+  comerciales distintos, cualquier antena/pigtail 2.4GHz con uno de
+  esos tres conectores sirve. (Fuente: [datasheet oficial
+  ESP32-WROOM-32E/-32UE](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf).)
+- **ESP32-WROOM-32D / -32E / WROVER** (antena PCB de fábrica): si tu
+  placa monta uno de estos y le has añadido un conector externo por
+  tu cuenta, sí hay que comprobar la resistencia de selección de
+  0-ohm entre antena PCB y conector — revisa la serigrafía de tu
+  placa concreta, varía según el fabricante.
+
+Si vas a publicar o vender algo basado en este proyecto (no aplica a
+uso personal/laboratorio): la certificación FCC del WROOM-32UE se
+hizo con una antena de 4.0 dBi de ganancia; usar una antena de
+ganancia igual o menor mantiene el módulo dentro de su
+precertificación. Ganancias mayores pueden requerir repetir pruebas
+de EMC.
 
 ## Configuración
 
